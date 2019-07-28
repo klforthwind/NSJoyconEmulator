@@ -176,28 +176,6 @@ def send_packet(packet=[0x00,0x00,0x08,0x80,0x80,0x80,0x80,0x00], debug=False):
         commandSuccess = True
     return commandSuccess
 
-# Convert DPAD value to actual DPAD value used by Switch
-def decrypt_dpad(dpad):
-    if dpad == DIR_U:
-        dpadDecrypt = A_DPAD_U
-    elif dpad == DIR_R:
-        dpadDecrypt = A_DPAD_R
-    elif dpad == DIR_D:
-        dpadDecrypt = A_DPAD_D
-    elif dpad == DIR_L:
-        dpadDecrypt = A_DPAD_L
-    elif dpad == DIR_U_R:
-        dpadDecrypt = A_DPAD_U_R
-    elif dpad == DIR_U_L:
-        dpadDecrypt = A_DPAD_U_L
-    elif dpad == DIR_D_R:
-        dpadDecrypt = A_DPAD_D_R
-    elif dpad == DIR_D_L:
-        dpadDecrypt = A_DPAD_D_L
-    else:
-        dpadDecrypt = A_DPAD_CENTER
-    return dpadDecrypt
-
 # Convert CMD to a packet
 def cmd_to_packet(command):
     cmdCopy = command
@@ -221,80 +199,22 @@ def send_cmd(command=NO_INPUT):
     commandSuccess = send_packet(cmd_to_packet(command))
     return commandSuccess
 
-#Test all buttons except for home and capture
-def testbench_btn():
-    send_cmd(BTN_A) ; p_wait(0.5) ; send_cmd() ; p_wait(0.001)
-    send_cmd(BTN_B) ; p_wait(0.5) ; send_cmd() ; p_wait(0.001)
-    send_cmd(BTN_X) ; p_wait(0.5) ; send_cmd() ; p_wait(0.001)
-    send_cmd(BTN_Y) ; p_wait(0.5) ; send_cmd() ; p_wait(0.001)
-    send_cmd(BTN_PLUS) ; p_wait(0.5) ; send_cmd() ; p_wait(0.001)
-    send_cmd(BTN_MINUS) ; p_wait(0.5) ; send_cmd() ; p_wait(0.001)
-    send_cmd(BTN_LCLICK) ; p_wait(0.5) ; send_cmd() ; p_wait(0.001)
-    send_cmd(BTN_RCLICK) ; p_wait(0.5) ; send_cmd() ; p_wait(0.001)
+# # Test Left Analog Stick
+# def testbench_lstick():
 
-# Test DPAD U / R / D / L
-def testbench_dpad():
-    send_cmd(DPAD_U) ; p_wait(0.5) ; send_cmd() ; p_wait(0.001)
-    send_cmd(DPAD_R) ; p_wait(0.5) ; send_cmd() ; p_wait(0.001)
-    send_cmd(DPAD_D) ; p_wait(0.5) ; send_cmd() ; p_wait(0.001)
-    send_cmd(DPAD_L) ; p_wait(0.5) ; send_cmd() ; p_wait(0.001)
+#     # 360 Circle @ Full Intensity
+#     for i in range(0,721):
+#         cmd = lstick_angle(i + 90, 0xFF)
+#         send_cmd(cmd)
+#         p_wait(0.001)
+#     send_cmd(LSTICK_CENTER) ; p_wait(0.5)
 
-# Test DPAD Diagonals - Does not register on switch due to dpad buttons
-def testbench_dpad_diag():
-    send_cmd(DPAD_U_R) ; p_wait(0.5) ; send_cmd() ; p_wait(0.001)
-    send_cmd(DPAD_D_R) ; p_wait(0.5) ; send_cmd() ; p_wait(0.001)
-    send_cmd(DPAD_D_L) ; p_wait(0.5) ; send_cmd() ; p_wait(0.001)
-    send_cmd(DPAD_U_L) ; p_wait(0.5) ; send_cmd() ; p_wait(0.001)
-
-# Test Left Analog Stick
-def testbench_lstick():
-    #Test U/R/D/L
-    send_cmd(BTN_LCLICK) ; p_wait(0.5) ; send_cmd() ; p_wait(0.001)
-    send_cmd(LSTICK_U) ; p_wait(0.5)
-    send_cmd(LSTICK_R) ; p_wait(0.5)
-    send_cmd(LSTICK_D) ; p_wait(0.5)
-    send_cmd(LSTICK_L) ; p_wait(0.5)
-    send_cmd(LSTICK_U) ; p_wait(0.5)
-    send_cmd(LSTICK_CENTER) ; p_wait(0.5)
-
-    # 360 Circle @ Full Intensity
-    for i in range(0,721):
-        cmd = lstick_angle(i + 90, 0xFF)
-        send_cmd(cmd)
-        p_wait(0.001)
-    send_cmd(LSTICK_CENTER) ; p_wait(0.5)
-
-    # 360 Circle @ Partial Intensity
-    for i in range(0,721):
-        cmd = lstick_angle(i + 90, 0x80)
-        send_cmd(cmd)
-        p_wait(0.001)
-    send_cmd(LSTICK_CENTER) ; p_wait(0.5)
-
-# Test Right Analog Stick
-def testbench_rstick():
-    #Test U/R/D/L
-    send_cmd(BTN_RCLICK) ; p_wait(0.5) ; send_cmd() ; p_wait(0.001)
-    send_cmd(RSTICK_U) ; p_wait(0.5)
-    send_cmd(RSTICK_R) ; p_wait(0.5)
-    send_cmd(RSTICK_D) ; p_wait(0.5)
-    send_cmd(RSTICK_L) ; p_wait(0.5)
-    send_cmd(RSTICK_U) ; p_wait(0.5)
-    send_cmd(RSTICK_CENTER) ; p_wait(0.5)
-
-    # 360 Circle @ Full Intensity
-    for i in range(0,721):
-        cmd = rstick_angle(i + 90, 0xFF)
-        send_cmd(cmd)
-        p_wait(0.001)
-    send_cmd(RSTICK_CENTER) ; p_wait(0.5)
-
-    # 360 Circle @ Partial Intensity
-    for i in range(0,721):
-        cmd = rstick_angle(i + 90, 0x80)
-        send_cmd(cmd)
-        p_wait(0.001)
-    send_cmd(RSTICK_CENTER) ; p_wait(0.5)
+#     # 360 Circle @ Partial Intensity
+#     for i in range(0,721):
+#         cmd = lstick_angle(i + 90, 0x80)
+#         send_cmd(cmd)
+#         p_wait(0.001)
+#     send_cmd(LSTICK_CENTER) ; p_wait(0.5)
 
 # Test Packet Speed
 def testbench_packet_speed(count=100, debug=False):
@@ -326,14 +246,6 @@ def testbench_packet_speed(count=100, debug=False):
 
     avg = sum / i
     print('Min =', '{:.3f}'.format(min), 'Max =', '{:.3}'.format(max), 'Avg =', '{:.3f}'.format(avg), 'Errors =', err)
-
-def testbench():
-    testbench_btn()
-    testbench_dpad()
-    testbench_lstick()
-    testbench_rstick()
-    testbench_packet_speed()
-    return
 
 # Force MCU to sync
 def force_sync():
@@ -385,7 +297,5 @@ if not send_cmd():
 
 # Successfully connected if we've reached this line
 print('Successful Connection!')
-
-
 
 ser.close
