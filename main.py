@@ -74,7 +74,6 @@ RESP_SYNC_START    = 0xFF
 RESP_SYNC_1        = 0xCC
 RESP_SYNC_OK       = 0x33
 
-
 # Compute x and y based on angle and intensity
 def angle(angle, intensity):
     # y is negative because on the Y input, UP = 0 and DOWN = 255
@@ -89,20 +88,10 @@ def rstick_angle(angle, intensity):
     return (intensity + (angle << 8)) << 44
 
 # Precision wait
-def p_wait(waitTime):
+def wait(waitTime):
     t0 = time.perf_counter()
     t1 = t0
     while (t1 - t0 < waitTime):
-        t1 = time.perf_counter()
-
-# Wait for data to be available on the serial port
-def wait_for_data(timeout = 1.0, sleepTime = 0.1):
-    t0 = time.perf_counter()
-    t1 = t0
-    inWaiting = ser.in_waiting
-    while ((t1 - t0 < sleepTime) or (inWaiting == 0)):
-        time.sleep(sleepTime)
-        inWaiting = ser.in_waiting
         t1 = time.perf_counter()
 
 # Read X bytes from the serial port (returns list)
@@ -176,8 +165,8 @@ def send_packet(packet=[0x00,0x00,0x08,0x80,0x80,0x80,0x80,0x00], debug=False):
         commandSuccess = True
     return commandSuccess
 
-# Convert CMD to a packet
-def cmd_to_packet(command):
+# Send a formatted controller command to the MCU
+def send_cmd(command=NO_INPUT):
     cmdCopy = command
     low              =  (cmdCopy & 0xFF)  ; cmdCopy = cmdCopy >>  8
     high             =  (cmdCopy & 0xFF)  ; cmdCopy = cmdCopy >>  8
@@ -186,17 +175,11 @@ def cmd_to_packet(command):
     lstick_angle     =  (cmdCopy & 0xFFF) ; cmdCopy = cmdCopy >> 12
     rstick_intensity =  (cmdCopy & 0xFF)  ; cmdCopy = cmdCopy >>  8
     rstick_angle     =  (cmdCopy & 0xFFF)
-    dpad = decrypt_dpad(dpad)
     left_x, left_y   = angle(lstick_angle, lstick_intensity)
     right_x, right_y = angle(rstick_angle, rstick_intensity)
 
     packet = [high, low, dpad, left_x, left_y, right_x, right_y, 0x00]
-    # print (hex(command), packet, lstick_angle, lstick_intensity, rstick_angle, rstick_intensity)
-    return packet
-
-# Send a formatted controller command to the MCU
-def send_cmd(command=NO_INPUT):
-    commandSuccess = send_packet(cmd_to_packet(command))
+    commandSuccess = send_packet(packet)
     return commandSuccess
 
 # # Test Left Analog Stick
@@ -247,6 +230,16 @@ def testbench_packet_speed(count=100, debug=False):
     avg = sum / i
     print('Min =', '{:.3f}'.format(min), 'Max =', '{:.3}'.format(max), 'Avg =', '{:.3f}'.format(avg), 'Errors =', err)
 
+# Wait for data to be available on the serial port
+def wait_for_data(timeout = 1.0, sleepTime = 0.1):
+    t0 = time.perf_counter()
+    t1 = t0
+    inWaiting = ser.in_waiting
+    while ((t1 - t0 < sleepTime) or (inWaiting == 0)):
+        time.sleep(sleepTime)
+        inWaiting = ser.in_waiting
+        t1 = time.perf_counter()
+
 # Force MCU to sync
 def force_sync():
     # Send 9x 0xFF's to fully flush out buffer on device
@@ -282,6 +275,11 @@ def sync():
             inSync = send_packet()
     return inSync
 
+def send_input(command=NO_INPUT):
+    if not send_cmd(command):
+        print('Packet Error!')
+        exit()
+
 # --------------------------------------------------------
 
 ser = serial.Serial(port=args.port, baudrate=19200,timeout=1)
@@ -291,9 +289,7 @@ if not sync():
     print('Could not sync!')
     exit()
 
-if not send_cmd():
-    print('Packet Error!')
-    exit()
+send_input()
 
 # Successfully connected if we've reached this line
 print('Successful Connection!')
